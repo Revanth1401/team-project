@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - EVEREST IMS</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 420px;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .logo span {
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 24px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #6a11cb;
+      outline: none;
+    }
+
+    .match-msg {
+      font-size: 13px;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    .match-msg.match {
+      color: green;
+    }
+
+    .match-msg.no-match {
+      color: red;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(45deg, #6a11cb, #2575fc);
+      color: white;
+      font-weight: bold;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: linear-gradient(45deg, #2575fc, #6a11cb);
+    }
+
+    .success {
+      text-align: center;
+      color: green;
+      margin-top: 12px;
+    }
+
+    .error {
+      text-align: center;
+      color: red;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo"><span>EVEREST IMS</span></div>
+    <h2>User Registration</h2>
+    <form id="registerForm">
+      <input type="text" id="user_id" placeholder="User ID" required />
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <input type="password" id="confirm_password" placeholder="Re-type Password" required />
+      <div id="passwordMsg" class="match-msg"></div>
+      <button type="submit">Register</button>
+    </form>
+    <div id="responseMsg"></div>
+  </div>
+
+  <script>
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirm_password");
+    const passwordMsg = document.getElementById("passwordMsg");
+    const responseMsg = document.getElementById("responseMsg");
+
+    confirmPassword.addEventListener("input", () => {
+      if (confirmPassword.value === "") {
+        passwordMsg.textContent = "";
+        return;
+      }
+
+      if (confirmPassword.value === password.value) {
+        passwordMsg.textContent = "✅ Passwords match";
+        passwordMsg.className = "match-msg match";
+      } else {
+        passwordMsg.textContent = "❌ Passwords do not match";
+        passwordMsg.className = "match-msg no-match";
+      }
+    });
+
+    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      if (password.value !== confirmPassword.value) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      const payload = {
+        user_id: document.getElementById("user_id").value,
+        name: document.getElementById("name").value,
+        password: password.value
+      };
+
+      try {
+        const response = await fetch("/register/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken() // If using Django's CSRF middleware
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          responseMsg.textContent = "🎉 " + data.message;
+          responseMsg.className = "success";
+          document.getElementById("registerForm").reset();
+          passwordMsg.textContent = "";
+        } else {
+          responseMsg.textContent = "❌ " + (data.error || "Registration failed");
+          responseMsg.className = "error";
+        }
+      } catch (err) {
+        responseMsg.textContent = "❌ Server error.";
+        responseMsg.className = "error";
+      }
+    });
+
+    // Utility: Get CSRF token from cookie
+    function getCSRFToken() {
+      let name = 'csrftoken=';
+      let decodedCookie = decodeURIComponent(document.cookie);
+      let ca = decodedCookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+      }
+      return "";
+    }
+  </script>
+</body>
+</html>
