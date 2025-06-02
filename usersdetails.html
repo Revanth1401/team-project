@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Details Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 40px;
+    }
+
+    .form-container, .table-container {
+      background: #fff;
+      padding: 20px;
+      margin: auto;
+      width: 600px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    .gender-options {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>User Details Form</h2>
+    <form id="userForm">
+      <label for="userid">User ID</label>
+      <input type="text" id="userid" name="userid" required>
+
+      <label for="fullname">Full Name</label>
+      <input type="text" id="fullname" name="fullname" required>
+
+      <label>Gender</label>
+      <div class="gender-options">
+        <label><input type="radio" name="gender" value="Male" required> Male</label>
+        <label><input type="radio" name="gender" value="Female"> Female</label>
+        <label><input type="radio" name="gender" value="Other"> Other</label>
+      </div>
+
+      <label for="dob">Date of Birth</label>
+      <input type="date" id="dob" name="dob" required>
+
+      <label for="task">Task</label>
+      <textarea id="task" name="task" rows="3" required></textarea>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <div class="table-container">
+    <h2>User Details Table</h2>
+    <table id="userTable">
+      <thead>
+        <tr>
+          <th>User ID</th>
+          <th>Full Name</th>
+          <th>Gender</th>
+          <th>Date of Birth</th>
+          <th>Task</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be added here dynamically -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById('userForm');
+    const tableBody = document.querySelector('#userTable tbody');
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      // Get form values
+      const userId = document.getElementById('userid').value;
+      const fullName = document.getElementById('fullname').value;
+      const gender = document.querySelector('input[name="gender"]:checked').value;
+      const dob = document.getElementById('dob').value;
+      const task = document.getElementById('task').value;
+
+      // Create new table row
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${userId}</td>
+        <td>${fullName}</td>
+        <td>${gender}</td>
+        <td>${dob}</td>
+        <td>${task}</td>
+      `;
+
+      // Append to table
+      tableBody.appendChild(row);
+
+      // Clear form
+      form.reset();
+    });
+  </script>
+
+</body>
+</html>
