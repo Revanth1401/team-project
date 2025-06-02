@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - EVEREST IMS</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #74ebd5, #9face6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 420px;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .logo span {
+      background: linear-gradient(45deg, #ff6a00, #ee0979);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 24px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 10px;
+      margin-bottom: 18px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 15px;
+      transition: border 0.3s;
+    }
+
+    input:focus {
+      border-color: #6a11cb;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(45deg, #6a11cb, #2575fc);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: linear-gradient(45deg, #2575fc, #6a11cb);
+    }
+
+    p {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 14px;
+    }
+
+    a {
+      color: #2575fc;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .logout-btn {
+      display: none;
+      margin-top: 20px;
+      background: #ff4e50;
+      background: linear-gradient(to right, #ff4e50, #f9d423);
+    }
+
+    .logout-btn:hover {
+      background: linear-gradient(to right, #f9d423, #ff4e50);
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="logo"><span>EVEREST IMS</span></div>
+    <div class="container">
+      <h2>Login</h2>
+      <div id="loginMessage" class="message"></div>
+      <form id="loginForm">
+        <input type="text" id="user_id" placeholder="User ID" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+
+      <button id="logoutBtn" class="logout-btn" onclick="handleLogout()">Logout</button>
+
+      <p>Don't have an account? <a href="register.html">Register here</a></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const userId = document.getElementById("user_id").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const messageBox = document.getElementById("loginMessage");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      if (userId === "" || password === "") {
+        messageBox.textContent = "❌ Please fill in all fields.";
+        messageBox.className = "message error";
+        return;
+      }
+
+      try {
+        const response = await fetch("/login/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            password: password
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          messageBox.textContent = "✅ " + result.message;
+          messageBox.className = "message success";
+          document.getElementById("loginForm").style.display = "none";
+          logoutBtn.style.display = "block";
+        } else {
+          messageBox.textContent = "❌ " + (result.error || "Login failed");
+          messageBox.className = "message error";
+        }
+      } catch (error) {
+        messageBox.textContent = "❌ Network or server error.";
+        messageBox.className = "message error";
+      }
+    });
+
+    function handleLogout() {
+      document.getElementById("loginForm").reset();
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("loginMessage").textContent = "🔒 You have logged out.";
+      document.getElementById("loginMessage").className = "message";
+    }
+
+    // Utility to extract CSRF token from cookies
+    function getCSRFToken() {
+      let name = 'csrftoken=';
+      let decodedCookie = decodeURIComponent(document.cookie);
+      let ca = decodedCookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+      }
+      return "";
+    }
+  </script>
+</body>
+</html>
